@@ -1,8 +1,5 @@
-import axios, { AxiosInstance } from 'axios';
+import axios, { type AxiosInstance } from 'axios';
 import { API } from './api.constants';
-import { refreshAccessToken } from '../authApi';
-import { TokenService } from '../../hooks/useToken';
-import { ApiError } from '../../utils/errors';
 
 const api: AxiosInstance = axios.create({
     baseURL: `${API.BASE_URL}${API.VERSION}`,
@@ -14,39 +11,39 @@ const api: AxiosInstance = axios.create({
 });
 
 // REQUEST: Attach access token
-api.interceptors.request.use(async (config) => {
-    const { access_token } = await TokenService.getTokens();
+// api.interceptors.request.use(async (config) => {
+//     const { access_token } = "";
 
-    if (access_token) {
-        config.headers.Authorization = `Bearer ${access_token}`;
-    }
+//     if (access_token) {
+//         config.headers.Authorization = `Bearer ${access_token}`;
+//     }
 
-    return config;
-});
+//     return config;
+// });
 
-// RESPONSE: Handle 401 & refresh token
-api.interceptors.response.use(
-    (response) => response,
-    async (error) => {
-        const originalRequest = error.config;
+// // RESPONSE: Handle 401 & refresh token
+// api.interceptors.response.use(
+//     (response) => response,
+//     async (error) => {
+//         const originalRequest = error.config;
 
-        if (error.response?.status === 401 && !originalRequest?._retry) {
-            originalRequest._retry = true;
+//         if (error.response?.status === 401 && !originalRequest?._retry) {
+//             originalRequest._retry = true;
 
-            try {
-                const newAccessToken = await refreshAccessToken();
+//             try {
+//                 const newAccessToken = await refreshAccessToken();
 
-                if (newAccessToken) {
-                    originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-                    return api(originalRequest);
-                }
-            } catch {
-                throw new ApiError('Session expired. Please login again.', 401);
-            }
-        }
+//                 if (newAccessToken) {
+//                     originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+//                     return api(originalRequest);
+//                 }
+//             } catch {
+//                 throw new ApiError('Session expired. Please login again.', 401);
+//             }
+//         }
 
-        return Promise.reject(error);
-    }
-);
+//         return Promise.reject(error);
+//     }
+// );
 
 export default api;
